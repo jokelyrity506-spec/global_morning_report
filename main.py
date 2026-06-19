@@ -3,36 +3,69 @@ import os
 import requests
 
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
+api_key=os.getenv("OPENAI_API_KEY")
 )
 
-prompt = """
-生成今日全球投资增强版早报：
+PROMPT = """
+请生成今日全球投资增强版晨报。
 
-1. 国际时政
-2. AI行业
-3. 电商
-4. Fintech
-5. 中国市场
-6. 东南亚市场
-7. 产品机会
-8. 投资机会
-9. 风险雷达
+要求：
 
-全部表格输出
-"""
+1. 全球热点TOP10
+2. 国际时政
+3. AI行业
+4. 中国互联网
+5. 东南亚市场
+6. Fintech
+7. 电商
+8. 产品机会（PM Insight）
+9. 投资机会（Trade Ideas）
+10. 风险雷达（Risk Radar）
 
+要求：
+
+* 表格输出
+* 只保留最近24小时重要变化
+* 避免重复旧闻
+* 内容简洁但信息密度高
+  """
+
+def send_telegram(text):
+token = os.getenv("TELEGRAM_TOKEN")
+chat_id = os.getenv("TELEGRAM_CHAT_ID")
+
+```
+for i in range(0, len(text), 3500):
+    chunk = text[i:i+3500]
+
+    requests.post(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": chunk
+        },
+        timeout=30
+    )
+```
+
+try:
+
+```
 response = client.responses.create(
-    model="gpt-5.5",
-    input=prompt
+    model="gpt-5",
+    input=PROMPT
 )
 
 report = response.output_text
 
-requests.post(
-    f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
-    json={
-        "chat_id": os.getenv("TELEGRAM_CHAT_ID"),
-        "text": report[:4000]
-    }
-)
+send_telegram(report)
+
+print("Morning report sent successfully")
+```
+
+except Exception as e:
+
+```
+print(f"Error: {e}")
+raise
+```
